@@ -73,11 +73,6 @@ function escapeMdxOutsideCodeBlocks(content: string): string {
   return result.join("\n");
 }
 
-function transformBlockIALs(content: string): string {
-  // Strip all kramdown-style block IALs (e.g. {: .note }, {: .sdk-references })
-  // MDX interprets curly braces as JSX expressions, so these must be removed.
-  return content.replace(/\{:\s*\.[a-zA-Z0-9_-]+\s*\}/g, "");
-}
 
 function getAllMarkdownFiles(dir: string): string[] {
   const files: string[] = [];
@@ -100,9 +95,7 @@ export function getAllDocs(): DocPage[] {
   return files.map((filePath) => {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
-    const transformed = escapeMdxOutsideCodeBlocks(
-      transformBlockIALs(content)
-    );
+    const transformed = escapeMdxOutsideCodeBlocks(content);
     return {
       slug: getSlugFromPath(filePath),
       title: data.title || path.basename(filePath, ".md"),
