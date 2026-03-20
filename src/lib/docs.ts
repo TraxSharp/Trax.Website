@@ -74,13 +74,9 @@ function escapeMdxOutsideCodeBlocks(content: string): string {
 }
 
 function transformBlockIALs(content: string): string {
-  // Transform {: .note } / {: .warning } / {: .important } block IALs
-  // into simple bold markers (MDX components can style these)
-  return content
-    .replace(/\{:\s*\.note\s*\}/g, "")
-    .replace(/\{:\s*\.warning\s*\}/g, "")
-    .replace(/\{:\s*\.important\s*\}/g, "")
-    .replace(/\{:\s*\.highlight\s*\}/g, "");
+  // Strip all kramdown-style block IALs (e.g. {: .note }, {: .sdk-references })
+  // MDX interprets curly braces as JSX expressions, so these must be removed.
+  return content.replace(/\{:\s*\.[a-zA-Z0-9_-]+\s*\}/g, "");
 }
 
 function getAllMarkdownFiles(dir: string): string[] {
