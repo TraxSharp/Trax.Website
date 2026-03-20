@@ -25,19 +25,6 @@ function getSlugFromPath(filePath: string): string {
   return slug;
 }
 
-function transformJekyllLinks(content: string): string {
-  // Transform {{ site.baseurl }}{% link path/to/file.md %} -> /docs/path/to/file
-  // Also handles optional #anchor suffix
-  return content.replace(
-    /\{\{\s*site\.baseurl\s*\}\}\{%\s*link\s+([\w/.-]+\.md)\s*%\}(#[\w-]*)?/g,
-    (_match, filePath: string, anchor: string | undefined) => {
-      const slug = filePath.replace(/\.md$/, "");
-      // index.md -> /docs
-      const href = slug === "index" ? "/docs" : `/docs/${slug}`;
-      return href + (anchor || "");
-    }
-  );
-}
 
 function escapeMdxOutsideCodeBlocks(content: string): string {
   // MDX chokes on JSX-like angle brackets (e.g. C# generics) outside code fences.
@@ -118,7 +105,7 @@ export function getAllDocs(): DocPage[] {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
     const transformed = escapeMdxOutsideCodeBlocks(
-      transformBlockIALs(transformJekyllLinks(content))
+      transformBlockIALs(content)
     );
     return {
       slug: getSlugFromPath(filePath),
