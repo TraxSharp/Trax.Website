@@ -27,10 +27,18 @@ rm -rf "$CACHE_DIR"
 mkdir -p "$CACHE_DIR"
 
 # Copy all markdown files preserving directory structure.
-# adr/ is deliberately excluded: architecture decision records are engineering record,
-# not product documentation, and are never published to the site.
+#
+# Everything under Trax.Docs is published EXCEPT the engineering-record trees below.
+# find descends into dotfile directories, so .claude/ must be named explicitly or the
+# agent skill and the ADR format spec get public /docs/ routes.
 cd "$SOURCE_DIR"
-find . -name "*.md" -not -name "README.md" -not -path "./adr/*" | while read -r file; do
+find . -name "*.md" -not -name "README.md" \
+  -not -path "./adr/*" \
+  -not -path "./.claude/*" \
+  -not -path "./tools/*" \
+  -not -path "./tests/*" \
+  -not -path "./.github/*" \
+  | while read -r file; do
   dir=$(dirname "$file")
   mkdir -p "$CACHE_DIR/$dir"
   cp "$file" "$CACHE_DIR/$file"
