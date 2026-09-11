@@ -26,9 +26,11 @@ fi
 rm -rf "$CACHE_DIR"
 mkdir -p "$CACHE_DIR"
 
-# Copy all markdown files preserving directory structure
+# Copy all markdown files preserving directory structure.
+# adr/ is deliberately excluded: architecture decision records are engineering record,
+# not product documentation, and are never published to the site.
 cd "$SOURCE_DIR"
-find . -name "*.md" -not -name "README.md" | while read -r file; do
+find . -name "*.md" -not -name "README.md" -not -path "./adr/*" | while read -r file; do
   dir=$(dirname "$file")
   mkdir -p "$CACHE_DIR/$dir"
   cp "$file" "$CACHE_DIR/$file"
