@@ -33,10 +33,10 @@ export default async function StepShape() {
           Each step does one thing. Trax handles the space between them.
         </h2>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-12">
+        <div className="mt-10 max-w-3xl space-y-10">
           <div>
             <div
-              className="overflow-x-auto rounded border border-border/50 [&_pre]:bg-bg-secondary [&_pre]:p-5 [&_pre]:font-mono [&_pre]:text-[13px] [&_pre]:leading-relaxed"
+              className="overflow-hidden rounded border border-border/50 [&_pre]:overflow-x-auto [&_pre]:bg-bg-secondary [&_pre]:p-5 [&_pre]:font-mono [&_pre]:text-[13px] [&_pre]:leading-relaxed"
               dangerouslySetInnerHTML={{ __html: inlineHtml }}
             />
             <p className="mt-4 max-w-lg text-sm leading-relaxed text-text-secondary">
@@ -48,7 +48,7 @@ export default async function StepShape() {
 
           <div>
             <div
-              className="overflow-x-auto rounded border border-accent/30 [&_pre]:bg-bg-secondary [&_pre]:p-5 [&_pre]:font-mono [&_pre]:text-[13px] [&_pre]:leading-relaxed"
+              className="overflow-hidden rounded border border-accent/30 [&_pre]:overflow-x-auto [&_pre]:bg-bg-secondary [&_pre]:p-5 [&_pre]:font-mono [&_pre]:text-[13px] [&_pre]:leading-relaxed"
               dangerouslySetInnerHTML={{ __html: chainHtml }}
             />
             <p className="mt-4 max-w-lg text-sm leading-relaxed text-text-secondary">

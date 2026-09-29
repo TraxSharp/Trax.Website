@@ -131,7 +131,7 @@ export default async function FourWays() {
         </p>
 
         <div
-          className="mt-8 overflow-x-auto rounded border border-accent/30 [&_pre]:bg-bg-secondary [&_pre]:p-5 [&_pre]:font-mono [&_pre]:text-[13px] [&_pre]:leading-relaxed"
+          className="mt-8 overflow-hidden rounded border border-accent/30 [&_pre]:overflow-x-auto [&_pre]:bg-bg-secondary [&_pre]:p-5 [&_pre]:font-mono [&_pre]:text-[13px] [&_pre]:leading-relaxed"
           dangerouslySetInnerHTML={{ __html: trainHtml }}
         />
 
