@@ -90,7 +90,7 @@ builder.Services.AddTraxWorker(opts => {
   {
     name: "Ephemeral dispatch",
     description:
-      "The API dispatches work over HTTP to a stateless runner, such as a Lambda function or a short-lived container. No persistent worker process, no polling. The runner boots, executes one pipeline, and exits. Good for bursty workloads where you don't want idle compute.",
+      "The API hands work to an AWS Lambda function through the AWS SDK. There is no public endpoint to secure: IAM decides who may invoke the function. No persistent worker process, no polling. The function boots, runs one pipeline, and exits. Good for bursty workloads where you don't want idle compute.",
     blocks: [
       {
         label: "Api / Program.cs",
@@ -98,13 +98,13 @@ builder.Services.AddTraxWorker(opts => {
     trax.AddEffects(effects => effects.UsePostgres(conn))
         .AddMediator(assembly)
         .AddScheduler(scheduler => scheduler
-            .UseRemoteWorkers(
-                remote => remote.BaseUrl = "https://runner/trax/execute",
+            .UseLambdaWorkers(
+                lambda => lambda.FunctionName = "trax-runner",
                 routing => routing
                     .ForTrain<IProcessOrderTrain>()
             )
-            .UseRemoteRun(
-                remote => remote.BaseUrl = "https://runner/trax/run"
+            .UseLambdaRun(
+                lambda => lambda.FunctionName = "trax-runner"
             )
         )
 );`,
