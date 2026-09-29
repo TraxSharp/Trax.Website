@@ -35,18 +35,9 @@ export default async function StepShape() {
 
         <div className="mt-10 max-w-3xl space-y-10">
           <div>
-            <div
-              className="overflow-hidden rounded border border-border/50 [&_pre]:overflow-x-auto [&_pre]:bg-bg-secondary [&_pre]:p-5 [&_pre]:font-mono [&_pre]:text-[13px] [&_pre]:leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: inlineHtml }}
-            />
-            <p className="mt-4 max-w-lg text-sm leading-relaxed text-text-secondary">
-              Three calls and three checks. The order of operations is in
-              there, but you have to read around the error handling to find
-              it.
+            <p className="mb-3 font-mono text-xs tracking-wider text-accent">
+              A train
             </p>
-          </div>
-
-          <div>
             <div
               className="overflow-hidden rounded border border-accent/30 [&_pre]:overflow-x-auto [&_pre]:bg-bg-secondary [&_pre]:p-5 [&_pre]:font-mono [&_pre]:text-[13px] [&_pre]:leading-relaxed"
               dangerouslySetInnerHTML={{ __html: chainHtml }}
@@ -55,6 +46,21 @@ export default async function StepShape() {
               A junction takes a typed input and returns a typed output. When
               one throws, the rest are skipped and the train arrives carrying
               the exception, so the route reads top to bottom.
+            </p>
+          </div>
+
+          <div className="opacity-70">
+            <p className="mb-3 font-mono text-xs tracking-wider text-text-muted">
+              The same route, written by hand
+            </p>
+            <div
+              className="overflow-hidden rounded border border-border/50 [&_pre]:overflow-x-auto [&_pre]:bg-bg-secondary [&_pre]:p-5 [&_pre]:font-mono [&_pre]:text-[12px] [&_pre]:leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: inlineHtml }}
+            />
+            <p className="mt-4 max-w-lg text-sm leading-relaxed text-text-secondary">
+              Three calls and three checks. The order of operations is in
+              there, but you have to read around the error handling to find
+              it.
             </p>
           </div>
         </div>
