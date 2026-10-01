@@ -55,6 +55,10 @@ find . -name "*.md" -not -name "README.md" \
   cp "$file" "$CACHE_DIR/$file"
 done
 
+# ADR file names, so a citation such as `Trax.Docs/adr/0026` in a page links to the
+# exact file on GitHub. ADRs themselves are not published as pages.
+node "$SCRIPT_DIR/adr-index.mjs" "$SOURCE_DIR" "$(dirname "$ROOT_DIR")" > "$CACHE_DIR/adr-index.json"
+
 # Clean up clone if we made one
 rm -rf "$CLONE_DIR"
 

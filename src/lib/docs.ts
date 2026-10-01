@@ -12,6 +12,8 @@ export interface DocPage {
   hasChildren: boolean;
   section?: string;
   filePath: string;
+  /** Path of the page in the Trax.Docs repo, e.g. `effect/host-tracking.md`. */
+  sourcePath: string;
   /** The page's markdown with the front matter removed: rendered by the docs pages and served raw. */
   body: string;
   /** Front-matter `description`, else the first prose paragraph, else a generic line. */
@@ -116,7 +118,12 @@ export function getAllDocs(): DocPage[] {
   return files.map((filePath) => {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
-    const title: string = data.title || path.basename(filePath, ".md");
+    // A page with no front matter (SECURITY.md) is titled by its H1, not its
+    // file name, so the sidebar does not show "SECURITY".
+    const title: string =
+      data.title ||
+      content.match(/^#\s+(.+?)\s*#*\s*$/m)?.[1] ||
+      path.basename(filePath, ".md");
     return {
       slug: getSlugFromPath(filePath),
       title,
@@ -126,6 +133,7 @@ export function getAllDocs(): DocPage[] {
       hasChildren: data.has_children ?? false,
       section: data.section,
       filePath,
+      sourcePath: path.relative(DOCS_DIR, filePath).split(path.sep).join("/"),
       body: content,
       description:
         (typeof data.description === "string" && data.description.trim()
@@ -145,6 +153,24 @@ function allDocsCached(): DocPage[] {
 
 export function getDocBySlug(slug: string): DocPage | undefined {
   return allDocsCached().find((doc) => doc.slug === slug);
+}
+
+/**
+ * The page's <title>. Titles are not unique (Host Tracking is both a guide and
+ * an SDK reference page), so a title another page shares is followed by the
+ * page's top-level section.
+ */
+export function documentTitle(doc: DocPage): string {
+  const shared = allDocsCached().some(
+    (other) => other !== doc && other.title === doc.title
+  );
+  const section = doc.grandParent ?? doc.parent ?? doc.section;
+  return shared && section ? `${doc.title} - ${section}` : doc.title;
+}
+
+/** The page's source file on GitHub, for readers who want to edit or cite it. */
+export function sourceUrl(doc: DocPage): string {
+  return `https://github.com/TraxSharp/Trax.Docs/blob/main/${doc.sourcePath}`;
 }
 
 export function generateStaticParams(): { slug: string[] }[] {

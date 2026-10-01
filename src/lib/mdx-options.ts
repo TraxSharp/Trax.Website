@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
@@ -7,6 +9,107 @@ import rehypePrettyCode from "rehype-pretty-code";
 import type { MDXRemoteProps } from "next-mdx-remote/rsc";
 import type { Html, Paragraph, Parent, Root, Text } from "mdast";
 import { visit, SKIP } from "unist-util-visit";
+
+// This module is imported by the render tests under plain Node, so it imports
+// packages only: no "@/" aliases and no relative imports.
+
+const GITHUB_ORG = "https://github.com/TraxSharp";
+
+/** Repo name to the ADR file paths in it, written by scripts/adr-index.mjs. */
+export type AdrIndex = Record<string, string[]>;
+
+function loadAdrIndex(): AdrIndex {
+  try {
+    return JSON.parse(
+      fs.readFileSync(
+        path.join(process.cwd(), ".docs-cache", "adr-index.json"),
+        "utf-8"
+      )
+    );
+  } catch {
+    return {};
+  }
+}
+
+// `Trax.Docs/adr/0026`, `Trax.Mediator/docs/adr/0004-some-title.md`, ...
+const ADR_CITATION =
+  /\b(Trax(?:\.[A-Za-z]+)+)\/((?:docs\/)?adr)\/(\d{4})(?:-[A-Za-z0-9-]+)?(?:\.md)?/g;
+
+/**
+ * The GitHub URL of a cited ADR: the exact file when the index knows it, else
+ * the repo's ADR index, which lists every record by number.
+ */
+export function adrUrl(
+  repo: string,
+  dir: string,
+  number: string,
+  index: AdrIndex
+): string {
+  const file = index[repo]?.find((p) => p.startsWith(`${dir}/${number}-`));
+  return `${GITHUB_ORG}/${repo}/blob/main/${file ?? `${dir}/README.md`}`;
+}
+
+interface MdNode {
+  type: string;
+  value?: string;
+  url?: string;
+  children?: MdNode[];
+}
+
+function citationLink(
+  match: RegExpExecArray,
+  child: MdNode,
+  index: AdrIndex
+): MdNode {
+  return {
+    type: "link",
+    url: adrUrl(match[1], match[2], match[3], index),
+    children: [child],
+  };
+}
+
+/** Splits a text node around its ADR citations, linking each one. */
+function linkText(node: MdNode, index: AdrIndex): MdNode[] {
+  const value = node.value ?? "";
+  const out: MdNode[] = [];
+  let last = 0;
+  for (const match of value.matchAll(ADR_CITATION)) {
+    const start = match.index ?? 0;
+    if (start > last) out.push({ type: "text", value: value.slice(last, start) });
+    out.push(
+      citationLink(match as RegExpExecArray, { type: "text", value: match[0] }, index)
+    );
+    last = start + match[0].length;
+  }
+  if (out.length === 0) return [node];
+  if (last < value.length) out.push({ type: "text", value: value.slice(last) });
+  return out;
+}
+
+const NO_LINKS_INSIDE = new Set(["link", "linkReference", "definition", "code"]);
+
+function linkCitations(node: MdNode, index: AdrIndex): void {
+  if (!node.children || NO_LINKS_INSIDE.has(node.type)) return;
+  node.children = node.children.flatMap((child) => {
+    if (child.type === "text") return linkText(child, index);
+    if (child.type === "inlineCode") {
+      const match = new RegExp(`^${ADR_CITATION.source}$`).exec(child.value ?? "");
+      return match ? [citationLink(match, child, index)] : [child];
+    }
+    linkCitations(child, index);
+    return [child];
+  });
+}
+
+/**
+ * Turns ADR citations in prose (`Trax.Docs/adr/0026`) into GitHub links. The
+ * ADRs are not published on the site, so the citation would otherwise lead
+ * nowhere.
+ */
+export function remarkAdrLinks(options: { index?: AdrIndex } = {}) {
+  const index = options.index ?? loadAdrIndex();
+  return (tree: MdNode) => linkCitations(tree, index);
+}
 
 /**
  * Raw HTML tags a docs page may use. Today the docs use only `<a id="...">`
@@ -114,12 +217,13 @@ export const docsSanitizeSchema: Schema = {
  * highlighting and heading slugs run after sanitizing, so their classes,
  * inline styles and ids are kept. A fence with no language is highlighted as
  * `text`, so every block carries a `data-language` and the `code` component
- * can tell it apart from inline code.
+ * can tell it apart from inline code. ADR citations in prose become links to
+ * the cited file on GitHub (remarkAdrLinks).
  */
 export const docsMdxOptions: MDXRemoteProps["options"] = {
   mdxOptions: {
     format: "md",
-    remarkPlugins: [remarkGfm, remarkLiteralHtml],
+    remarkPlugins: [remarkGfm, remarkLiteralHtml, remarkAdrLinks],
     rehypePlugins: [
       rehypeRaw,
       [rehypeSanitize, docsSanitizeSchema],
