@@ -44,6 +44,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  async redirects() {
+    return [
+      // Pages renamed in Trax.Docs keep their old URLs working.
+      {
+        source: "/docs/sdk-reference/configuration/add-service-train-bus",
+        destination: "/docs/sdk-reference/configuration/add-mediator",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       // /docs/<slug>.md serves the page's raw markdown. The docs pages own the

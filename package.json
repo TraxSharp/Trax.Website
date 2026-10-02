@@ -7,7 +7,7 @@
     "build": "bash scripts/sync-docs.sh && next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON 'tests/**/*.test.ts'"
+    "test": "bash scripts/sync-docs.sh && node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON 'tests/**/*.test.ts'"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -25,6 +25,7 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
+    "@mdx-js/mdx": "^3.1.1",
     "@tailwindcss/postcss": "^4",
     "@types/mdast": "^4.0.4",
     "@types/node": "^20",
