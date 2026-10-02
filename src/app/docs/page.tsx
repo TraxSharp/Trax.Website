@@ -34,7 +34,7 @@ export default function DocsHomePage() {
             <MarkdownLink slug="" />
           </div>
           <MDXRemote
-            source={doc.content}
+            source={doc.body}
             components={mdxComponents}
             options={docsMdxOptions}
           />

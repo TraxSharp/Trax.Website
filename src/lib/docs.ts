@@ -6,14 +6,13 @@ import { SITE_URL } from "./site";
 export interface DocPage {
   slug: string;
   title: string;
-  content: string;
   navOrder: number;
   parent?: string;
   grandParent?: string;
   hasChildren: boolean;
   section?: string;
   filePath: string;
-  /** The page's markdown with the front matter removed and no MDX escaping. */
+  /** The page's markdown with the front matter removed: rendered by the docs pages and served raw. */
   body: string;
   /** Front-matter `description`, else the first prose paragraph, else a generic line. */
   description: string;
@@ -29,55 +28,6 @@ function getSlugFromPath(filePath: string): string {
   const slug = relative.replace(/\.md$/, "");
   return slug;
 }
-
-
-function escapeMdxOutsideCodeBlocks(content: string): string {
-  // MDX chokes on JSX-like angle brackets (e.g. C# generics) outside code fences.
-  // Escape them only in non-code-block lines.
-  const lines = content.split("\n");
-  let inCodeBlock = false;
-  const result: string[] = [];
-
-  for (const line of lines) {
-    if (line.trimStart().startsWith("```")) {
-      inCodeBlock = !inCodeBlock;
-      result.push(line);
-      continue;
-    }
-
-    if (inCodeBlock) {
-      result.push(line);
-    } else {
-      // Also skip inline code spans — don't escape inside backticks
-      // Replace angle brackets that look like generics or HTML-like tokens
-      // but preserve actual HTML tags we want (like <br>, <details>, etc.)
-      let escaped = line;
-      // Escape < that aren't part of well-known HTML tags or markdown links
-      escaped = escaped.replace(
-        /`[^`]*`/g,
-        (match) => match // preserve inline code as-is by replacing back
-      );
-      // For lines not fully inside inline code, escape bare angle brackets
-      // Strategy: replace inline code with placeholders, escape, restore
-      const placeholders: string[] = [];
-      escaped = escaped.replace(/`[^`]*`/g, (match) => {
-        placeholders.push(match);
-        return `%%INLINECODE${placeholders.length - 1}%%`;
-      });
-      // Now escape angle brackets in the non-code parts
-      escaped = escaped.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      // Restore inline code
-      escaped = escaped.replace(
-        /%%INLINECODE(\d+)%%/g,
-        (_, i) => placeholders[parseInt(i)]
-      );
-      result.push(escaped);
-    }
-  }
-
-  return result.join("\n");
-}
-
 
 function getAllMarkdownFiles(dir: string): string[] {
   const files: string[] = [];
@@ -166,12 +116,10 @@ export function getAllDocs(): DocPage[] {
   return files.map((filePath) => {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data, content } = matter(raw);
-    const transformed = escapeMdxOutsideCodeBlocks(content);
     const title: string = data.title || path.basename(filePath, ".md");
     return {
       slug: getSlugFromPath(filePath),
       title,
-      content: transformed,
       navOrder: data.nav_order ?? 999,
       parent: data.parent,
       grandParent: data.grand_parent,

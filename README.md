@@ -15,7 +15,7 @@ Trax.Website is the source for [traxsharp.net](https://traxsharp.net): the landi
 |---|---|
 | Next.js 16 (App Router) | Server-rendered site. It is not a static export: `next.config.ts` rewrites `/docs/<slug>.md` to the raw Markdown route. |
 | Tailwind CSS 4 | Styling, dark theme |
-| `next-mdx-remote`, `rehype-pretty-code` and Shiki | Render the docs Markdown with highlighted code |
+| `next-mdx-remote`, `rehype-pretty-code` and Shiki | Render the docs as CommonMark (not MDX) with highlighted code; raw HTML is limited to a few tags by `rehype-sanitize` |
 | Trax.Docs | The page content, synced in at dev and build time |
 
 ## Run it locally
@@ -32,7 +32,8 @@ npm run dev
 and `.github/`. With no sibling checkout it shallow-clones `main` from GitHub instead. To preview a docs change, clone
 Trax.Docs next to this repo, edit it there, and restart the dev server.
 
-Before committing, run `npm run lint` and `npm run build`.
+Before committing, run `npm run lint`, `npm test` and `npm run build`. `npm test` renders Markdown through the docs
+pipeline and checks what reaches the HTML.
 
 ## Project structure
 
@@ -50,15 +51,17 @@ src/
 │   ├── landing/                  # landing page sections
 │   ├── docs/                     # docs layout, sidebar, breadcrumb, table of contents
 │   ├── layout/                   # header, footer, mobile nav
-│   └── mdx/                      # MDX component overrides
+│   └── mdx/                      # element overrides for rendered docs
 └── lib/
     ├── docs.ts                   # reads .docs-cache, front matter, page summaries
     ├── nav-tree.ts               # sidebar tree
     ├── llms.ts                   # llms.txt and the full-text bundles
-    ├── mdx-options.ts            # remark and rehype plugins shared by docs pages
+    ├── mdx-options.ts            # docs rendering: CommonMark, raw HTML allow-list, sanitizer, highlighting
     └── site.ts                   # site URL and description
 scripts/
 └── sync-docs.sh                  # copies Trax.Docs into .docs-cache
+tests/
+└── render.test.ts                # docs rendering checks, run by npm test
 ```
 
 ## License

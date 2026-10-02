@@ -63,7 +63,7 @@ export default async function DocPage({ params }: PageProps) {
       </div>
       <div className="docs-content">
         <MDXRemote
-          source={doc.content}
+          source={doc.body}
           components={mdxComponents}
           options={docsMdxOptions}
         />
