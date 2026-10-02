@@ -1,14 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "img.shields.io",
-      },
-    ],
-  },
   async rewrites() {
     return [
       // /docs/<slug>.md serves the page's raw markdown. The docs pages own the
